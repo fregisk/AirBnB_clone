@@ -1,219 +1,118 @@
 #!/usr/bin/python3
-"""
-Unittest for the Place class
-Test files by using the following command line:
-python3 -m unittest tests/test_models/test_place.py
-"""
-import unittest
-import pep8
-from os import path, remove
-import datetime
-import models
-# from models import base_model
+
+"""[Unittest for place]
+    """
+from datetime import date, datetime
+from unittest import TestCase
 from models import place
-# from models.base_model import BaseModel
-from models.place import Place
-# from models import engine
-# from models.engine import file_storage
-from models.engine.file_storage import FileStorage
+import uuid
+import pycodestyle
+Place = place.Place
 
 
-class TestPlace(unittest.TestCase):
-    """define variables and methods"""
+class Test_style(TestCase):
+    """[Class created to test style and syntax requirements for the
+    place class]
+    """
 
-    def setUp(self):
+    def test_pycode(self):
+        """[Function that check Syntax from Peep8 branch called pycodestyle]
         """
-        Sets the public class attributes of the Place class back to ""
-        Method called to prepare the test fixture. This is called immediately
-        before calling the test method; other than AssertionError or SkipTest
+        foo = pycodestyle.StyleGuide(quiet=True).check_files([
+            'models/place.py'])
+        self.assertEqual(foo.total_errors, 0,
+                         "Found code style error (and warnings).")
+
+
+class Test_place(TestCase):
+    """[Class for testing all the function of place class]
+    """
+    @classmethod
+    def setUpClass(cls):
+        """Setting up a test object"""
+        cls.place1 = Place()
+
+    def test_empty_place(self):
+        """[Testing if instance is correcty related]
         """
-        Place.city_id = ""
-        Place.user_id = ""
-        Place.name = ""
-        Place.description = ""
-        Place.number_rooms = 0
-        Place.number_bathrooms = 0
-        Place.max_guest = 0
-        Place.price_by_night = 0
-        Place.latitude = 0.0
-        Place.longitude = 0.0
-        Place.amenity_ids = []
-        FileStorage._FileStorage__objects = {}
-        FileStorage._FileStorage__file_path = "file.json"
+        self.assertIsNotNone(self.place1)
+        self.assertIsInstance(self.place1, Place)
 
-    def tearDown(self):
+    def test_id_value(self):
+        """[Cheking if id is an uuid version 4]
         """
-        Sets the public class attributes of the Place class back to ""
-        Method called immediately after the test method has been called and
-        the result recorded
+        place_test2 = Place(id='1')
+        with self.assertRaises(ValueError) as _:
+            uuid.UUID(place_test2.id, version=4)
+        place_test3 = Place(id=['1'])
+        with self.assertRaises(AttributeError) as _:
+            uuid.UUID(place_test3.id, version=4)
+
+    def test_dates(self):
+        """[Cheking dates are correctly created]
         """
-        del Place.city_id
-        del Place.user_id
-        del Place.name
-        del Place.description
-        del Place.number_rooms
-        del Place.number_bathrooms
-        del Place.max_guest
-        del Place.price_by_night
-        del Place.latitude
-        del Place.longitude
-        del Place.amenity_ids
-        del FileStorage._FileStorage__file_path
-        del FileStorage._FileStorage__objects
-        if path.exists("file.json"):
-            remove("file.json")
+        self.assertIsInstance(self.place1.created_at, datetime)
+        self.assertIsInstance(self.place1.updated_at, datetime)
 
-    def test_pep8_conformance(self):
-        """Test that Place conforms to PEP8"""
-        pep8style = pep8.StyleGuide(quiet=True)
-        result = pep8style.check_files(['models/place.py'])
-        self.assertEqual(result.total_errors, 0,
-                         "Found code style errors (and warnings).")
-
-    def test_class_method_presence(self):
-        """Test that the Place methods are all present"""
-        l1 = dir(Place)
-        self.assertIn('__init__', l1)
-        self.assertIn('save', l1)
-        self.assertIn('to_dict', l1)
-        self.assertIn('__str__', l1)
-
-    def test_class_attribute_presence(self):
-        """Test that the Place attributes are all present"""
-        l1 = dir(Place)
-        self.assertIn('city_id', l1)
-        self.assertIn('user_id', l1)
-        self.assertIn('name', l1)
-        self.assertIn('description', l1)
-        self.assertIn('number_rooms', l1)
-        self.assertIn('number_bathrooms', l1)
-        self.assertIn('max_guest', l1)
-        self.assertIn('price_by_night', l1)
-        self.assertIn('latitude', l1)
-        self.assertIn('longitude', l1)
-        self.assertIn('amenity_ids', l1)
-
-    def test_instance_method_presence(self):
-        """Test that the Place instance has the same methods"""
-        l1 = dir(Place())
-        self.assertIn('__init__', l1)
-        self.assertIn('save', l1)
-        self.assertIn('to_dict', l1)
-        self.assertIn('__str__', l1)
-
-    def test_instance_attribute_presence(self):
-        """Test that the Place instance attributes are all present"""
-        l1 = dir(Place())
-        self.assertIn('id', l1)
-        self.assertIn('updated_at', l1)
-        self.assertIn('created_at', l1)
-        self.assertIn('__class__', l1)
-        self.assertIn('city_id', l1)
-        self.assertIn('user_id', l1)
-        self.assertIn('name', l1)
-        self.assertIn('description', l1)
-        self.assertIn('number_rooms', l1)
-        self.assertIn('number_bathrooms', l1)
-        self.assertIn('max_guest', l1)
-        self.assertIn('price_by_night', l1)
-        self.assertIn('latitude', l1)
-        self.assertIn('longitude', l1)
-        self.assertIn('amenity_ids', l1)
-
-    def test_docstring_presence(self):
-        """Test that Module, Class, and methods all have a docstring"""
-        self.assertIsNot(place.__doc__, None)
-        self.assertIsNot(Place.__doc__, None)
-        self.assertIsNot(Place.__init__.__doc__, None)
-        self.assertIsNot(Place.save.__doc__, None)
-        self.assertIsNot(Place.to_dict.__doc__, None)
-        self.assertIsNot(Place.__str__.__doc__, None)
-
-    def test_instantiation(self):
-        """Test proper instantiation of object 'Place()'"""
-
-        pl = Place()
-        self.assertIsInstance(pl, Place)
-        self.assertIsInstance(pl.id, str)
-        self.assertIsInstance(pl.created_at, datetime.datetime)
-        self.assertIsInstance(pl.updated_at, datetime.datetime)
-        self.assertIsInstance(pl.__class__, type)
-
-        pl.size = "tall"
-        l1 = dir(pl)
-        self.assertIn('size', l1)
-        self.assertEqual(pl.__dict__['size'], 'tall')
-
-        pl.size = 'tall'
-        l2 = dir(pl)
-        self.assertIn('size', l2)
-        self.assertEqual(pl.__dict__['size'], 'tall')
-
-        pl.age = 28
-        l3 = dir(pl)
-        self.assertIn('age', l3)
-        self.assertEqual(pl.__dict__['age'], 28)
-
-        pl.age = 28.5
-        l4 = dir(pl)
-        self.assertIn('age', l4)
-        self.assertEqual(pl.__dict__['age'], 28.5)
-
-        pl.age = None
-        l5 = dir(pl)
-        self.assertIn('age', l5)
-        self.assertEqual(pl.__dict__['age'], None)
-
-        pl_kw1 = Place(**{})
-        self.assertIsInstance(pl_kw1, Place)
-        self.assertIsInstance(pl_kw1.id, str)
-        self.assertIsInstance(pl_kw1.created_at, datetime.datetime)
-        self.assertIsInstance(pl_kw1.updated_at, datetime.datetime)
-        self.assertIsInstance(pl_kw1.__class__, type)
-
-        pl_kw2 = Place(**{"first_name": "John", "age": 25})
-        l6 = dir(pl_kw2)
-        self.assertIn('first_name', l6)
-        self.assertIn('age', l6)
-        self.assertEqual(pl_kw2.__dict__['first_name'], 'John')
-        self.assertEqual(pl_kw2.__dict__['age'], 25)
+    def test__str__(self):
+        """[Cheking correct output when printing]"""
+        id1 = self.place1.id
+        self.assertTrue(f'[Place] ({id1})' in str(self.place1))
 
     def test_save(self):
-        """Test save method"""
-
-        # storage = FileStorage()
-
-        pl = Place()
-        temp = pl.__dict__['updated_at']
-        self.assertFalse(path.isfile('file.json'))
-        pl.save()
-        self.assertTrue(path.isfile('file.json'))
-        self.assertNotEqual(pl.__dict__['updated_at'], temp)
-        temp = pl.__dict__['updated_at']
-        # storage.reload()
-        models.storage.reload()
-        self.assertEqual(pl.__dict__['updated_at'], temp)
+        """Checks if updated_at is changed with save method"""
+        self.place1.save()
+        self.assertNotEqual(self.place1.updated_at,
+                            self.place1.created_at)
 
     def test_to_dict(self):
-        """Test to_dict method"""
+        """Checks to_dict method"""
+        place_test4 = Place()
+        dict_place4 = place_test4.to_dict()
+        self.assertIsInstance(dict_place4, dict)
+        self.assertIsInstance(dict_place4['created_at'], str)
+        self.assertIsInstance(dict_place4['updated_at'], str)
 
-        pl = Place()
-        pl.age = 28
-        pl.size = "tall"
-        for k, v in pl.__dict__.items():
-            if k != 'updated_at' and k != 'created_at':
-                self.assertIn(k, pl.to_dict())
-                self.assertEqual(v, pl.to_dict()[k])
-        self.assertEqual(pl.to_dict()['__class__'], pl.__class__.__name__)
-        self.assertEqual(pl.to_dict()['updated_at'], pl.updated_at.isoformat())
-        self.assertEqual(pl.to_dict()['created_at'], pl.created_at.isoformat())
-        self.assertEqual(pl.to_dict()['age'], 28)
-        self.assertEqual(pl.to_dict()['size'], 'tall')
-        self.assertIsInstance(pl.to_dict(), dict)
+    def test_attributes(self):
+        """Checks correct attributes assignment"""
+        place5 = Place(city_id=123)
+        place5.user_id = 456
+        place5.name = "Casa1"
+        place5.description = "Big"
+        place5.number_rooms = 5
+        place5.number_bathrooms = 6
+        place5.max_guest = 10
+        place5.price_by_night = 25
+        place5.latitude = 0.5
+        place5.longitude = 1.45
+        self.assertEqual(place5.city_id, 123)
+        self.assertEqual(place5.name, 'Casa1')
+        self.assertEqual(place5.description, 'Big')
+        self.assertEqual(place5.number_rooms, 5)
+        self.assertEqual(place5.number_bathrooms, 6)
+        self.assertEqual(place5.max_guest, 10)
+        self.assertEqual(place5.price_by_night, 25)
+        self.assertEqual(place5.latitude, 0.5)
+        self.assertEqual(place5.longitude, 1.45)
 
-    def test_str(self):
-        """Test __str__ method"""
+    def test_creating_with_kwargs(self):
+        """[Checking creation with kwargs]"""
+        obj = Place()
+        dictionary = obj.to_dict()
+        new_date = datetime.today()
+        new_date_iso = new_date.isoformat()
+        dictionary["created_at"] = new_date_iso
+        dictionary["updated_at"] = new_date_iso
+        id = dictionary["id"]
+        obj = Place(**dictionary)
+        self.assertEqual(obj.id, id)
+        self.assertEqual(obj.created_at, new_date)
+        self.assertEqual(obj.updated_at, new_date)
 
-        pl = Place()
-        string = '['+pl.__class__.__name__+']'+' ('+pl.id+') '+str(pl.__dict__)
-        self.assertEqual(string, pl.__str__())
+    def test_save_with_file(self):
+        """ Checks if the generated key is saved in the json file"""
+        obj = Place()
+        obj.save()
+        key_id = f"Place.{obj.id}"
+        with open("file.json", mode="r", encoding="utf-8") as f:
+            self.assertIn(key_id, f.read())

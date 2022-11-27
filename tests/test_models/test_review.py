@@ -1,187 +1,105 @@
 #!/usr/bin/python3
-"""
-Unittest for the Review class
-Test files by using the following command line:
-python3 -m unittest tests/test_models/test_review.py
-"""
-import unittest
-import pep8
-from os import path, remove
-import datetime
-import models
-# from models import base_model
+
+"""[Unittest for review]
+    """
+from datetime import date, datetime
+from unittest import TestCase
 from models import review
-# from models.base_model import BaseModel
-from models.review import Review
-# from models import engine
-# from models.engine import file_storage
-from models.engine.file_storage import FileStorage
+import uuid
+import pycodestyle
+Review = review.Review
 
 
-class TestReview(unittest.TestCase):
-    """define variables and methods"""
+class Test_style(TestCase):
+    """[Class created to test style and syntax requirements for the
+    review class]
+    """
 
-    def setUp(self):
+    def test_pycode(self):
+        """[Function that check Syntax from Peep8 branch called pycodestyle]
         """
-        Sets the public class attributes of the Review class back to ""
-        Method called to prepare the test fixture. This is called immediately
-        before calling the test method; other than AssertionError or SkipTest
+        foo = pycodestyle.StyleGuide(quiet=True).check_files([
+            'models/review.py'])
+        self.assertEqual(foo.total_errors, 0,
+                         "Found code style error (and warnings).")
+
+
+class Test_review(TestCase):
+    """[Class for testing all the function of review class]
+    """
+    @classmethod
+    def setUpClass(cls):
+        """Setting up a test object"""
+        cls.review1 = Review()
+
+    def test_empty_review(self):
+        """[Testing if instance is correcty related]
         """
-        Review.place_id = ""
-        Review.user_id = ""
-        Review.text = ""
-        FileStorage._FileStorage__objects = {}
-        FileStorage._FileStorage__file_path = "file.json"
+        self.assertIsNotNone(self.review1)
+        self.assertIsInstance(self.review1, Review)
 
-    def tearDown(self):
+    def test_id_value(self):
+        """[Cheking if id is an uuid version 4]
         """
-        Sets the public class attributes of the Review class back to ""
-        Method called immediately after the test method has been called and
-        the result recorded
+        review_test2 = Review(id='1')
+        with self.assertRaises(ValueError) as _:
+            uuid.UUID(review_test2.id, version=4)
+        review_test3 = Review(id=['1'])
+        with self.assertRaises(AttributeError) as _:
+            uuid.UUID(review_test3.id, version=4)
+
+    def test_dates(self):
+        """[Cheking dates are correctly created]
         """
-        del Review.place_id
-        del Review.user_id
-        del Review.text
-        del FileStorage._FileStorage__file_path
-        del FileStorage._FileStorage__objects
-        if path.exists("file.json"):
-            remove("file.json")
+        self.assertIsInstance(self.review1.created_at, datetime)
+        self.assertIsInstance(self.review1.updated_at, datetime)
 
-    def test_pep8_conformance(self):
-        """Test that Review conforms to PEP8"""
-        pep8style = pep8.StyleGuide(quiet=True)
-        result = pep8style.check_files(['models/review.py'])
-        self.assertEqual(result.total_errors, 0,
-                         "Found code style errors (and warnings).")
-
-    def test_class_method_presence(self):
-        """Test that the Review methods are all present"""
-        l1 = dir(Review)
-        self.assertIn('__init__', l1)
-        self.assertIn('save', l1)
-        self.assertIn('to_dict', l1)
-        self.assertIn('__str__', l1)
-
-    def test_class_attribute_presence(self):
-        """Test that the Review attributes are all present"""
-        l1 = dir(Review)
-        self.assertIn('place_id', l1)
-        self.assertIn('user_id', l1)
-        self.assertIn('text', l1)
-
-    def test_instance_method_presence(self):
-        """Test that the Review instance has the same methods"""
-        l1 = dir(Review())
-        self.assertIn('__init__', l1)
-        self.assertIn('save', l1)
-        self.assertIn('to_dict', l1)
-        self.assertIn('__str__', l1)
-
-    def test_instance_attribute_presence(self):
-        """Test that the Review instance attributes are all present"""
-        l1 = dir(Review())
-        self.assertIn('id', l1)
-        self.assertIn('updated_at', l1)
-        self.assertIn('created_at', l1)
-        self.assertIn('__class__', l1)
-        self.assertIn('place_id', l1)
-        self.assertIn('user_id', l1)
-        self.assertIn('text', l1)
-
-    def test_docstring_presence(self):
-        """Test that Module, Class, and methods all have a docstring"""
-        self.assertIsNot(review.__doc__, None)
-        self.assertIsNot(Review.__doc__, None)
-        self.assertIsNot(Review.__init__.__doc__, None)
-        self.assertIsNot(Review.save.__doc__, None)
-        self.assertIsNot(Review.to_dict.__doc__, None)
-        self.assertIsNot(Review.__str__.__doc__, None)
-
-    def test_instantiation(self):
-        """Test proper instantiation of object 'User()'"""
-
-        re = Review()
-        self.assertIsInstance(re, Review)
-        self.assertIsInstance(re.id, str)
-        self.assertIsInstance(re.created_at, datetime.datetime)
-        self.assertIsInstance(re.updated_at, datetime.datetime)
-        self.assertIsInstance(re.__class__, type)
-
-        re.size = "tall"
-        l1 = dir(re)
-        self.assertIn('size', l1)
-        self.assertEqual(re.__dict__['size'], 'tall')
-
-        re.size = 'tall'
-        l2 = dir(re)
-        self.assertIn('size', l2)
-        self.assertEqual(re.__dict__['size'], 'tall')
-
-        re.age = 28
-        l3 = dir(re)
-        self.assertIn('age', l3)
-        self.assertEqual(re.__dict__['age'], 28)
-
-        re.age = 28.5
-        l4 = dir(re)
-        self.assertIn('age', l4)
-        self.assertEqual(re.__dict__['age'], 28.5)
-
-        re.age = None
-        l5 = dir(re)
-        self.assertIn('age', l5)
-        self.assertEqual(re.__dict__['age'], None)
-
-        re_kw1 = Review(**{})
-        self.assertIsInstance(re_kw1, Review)
-        self.assertIsInstance(re_kw1.id, str)
-        self.assertIsInstance(re_kw1.created_at, datetime.datetime)
-        self.assertIsInstance(re_kw1.updated_at, datetime.datetime)
-        self.assertIsInstance(re_kw1.__class__, type)
-
-        re_kw2 = Review(**{"first_name": "John", "age": 25})
-        l6 = dir(re_kw2)
-        self.assertIn('first_name', l6)
-        self.assertIn('age', l6)
-        self.assertEqual(re_kw2.__dict__['first_name'], 'John')
-        self.assertEqual(re_kw2.__dict__['age'], 25)
+    def test__str__(self):
+        """[Cheking correct output when printing]"""
+        id1 = self.review1.id
+        self.assertTrue(f'[Review] ({id1})' in str(self.review1))
 
     def test_save(self):
-        """Test save method"""
-
-        # storage = FileStorage()
-
-        re = Review()
-        temp = re.__dict__['updated_at']
-        self.assertFalse(path.isfile('file.json'))
-        re.save()
-        self.assertTrue(path.isfile('file.json'))
-        self.assertNotEqual(re.__dict__['updated_at'], temp)
-        temp = re.__dict__['updated_at']
-        # storage.reload()
-        models.storage.reload()
-        self.assertEqual(re.__dict__['updated_at'], temp)
+        """Checks if updated_at is changed with save method"""
+        self.review1.save()
+        self.assertNotEqual(self.review1.updated_at,
+                            self.review1.created_at)
 
     def test_to_dict(self):
-        """Test to_dict method"""
+        """Checks to_dict method"""
+        review_test4 = Review()
+        dict_review4 = review_test4.to_dict()
+        self.assertIsInstance(dict_review4, dict)
+        self.assertIsInstance(dict_review4['created_at'], str)
+        self.assertIsInstance(dict_review4['updated_at'], str)
 
-        re = Review()
-        re.age = 28
-        re.size = "tall"
-        for k, v in re.__dict__.items():
-            if k != 'updated_at' and k != 'created_at':
-                self.assertIn(k, re.to_dict())
-                self.assertEqual(v, re.to_dict()[k])
-        self.assertEqual(re.to_dict()['__class__'], re.__class__.__name__)
-        self.assertEqual(re.to_dict()['updated_at'], re.updated_at.isoformat())
-        self.assertEqual(re.to_dict()['created_at'], re.created_at.isoformat())
-        self.assertEqual(re.to_dict()['age'], 28)
-        self.assertEqual(re.to_dict()['size'], 'tall')
-        self.assertIsInstance(re.to_dict(), dict)
+    def test_attributes(self):
+        """Checks correct attributes assignment"""
+        review5 = Review(place_id=123)
+        review5.user_id = 456
+        review5.text = 'hello world'
+        self.assertEqual(review5.place_id, 123)
+        self.assertEqual(review5.user_id, 456)
+        self.assertEqual(review5.text, 'hello world')
 
-    def test_str(self):
-        """Test __str__ method"""
+    def test_creating_with_kwargs(self):
+        """[Checking creation with kwargs]"""
+        obj = Review()
+        dictionary = obj.to_dict()
+        new_date = datetime.today()
+        new_date_iso = new_date.isoformat()
+        dictionary["created_at"] = new_date_iso
+        dictionary["updated_at"] = new_date_iso
+        id = dictionary["id"]
+        obj = Review(**dictionary)
+        self.assertEqual(obj.id, id)
+        self.assertEqual(obj.created_at, new_date)
+        self.assertEqual(obj.updated_at, new_date)
 
-        re = Review()
-        string = '['+re.__class__.__name__+']'+' ('+re.id+') '+str(re.__dict__)
-        self.assertEqual(string, re.__str__())
+    def test_save_with_file(self):
+        """ Checks if the generated key is saved in the json file"""
+        obj = Review()
+        obj.save()
+        key_id = f"Review.{obj.id}"
+        with open("file.json", mode="r", encoding="utf-8") as f:
+            self.assertIn(key_id, f.read())

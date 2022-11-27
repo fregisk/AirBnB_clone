@@ -1,179 +1,101 @@
 #!/usr/bin/python3
-"""
-Unittest for the State class
-Test files by using the following command line:
-python3 -m unittest tests/test_models/test_state.py
-"""
-import unittest
-import pep8
-from os import path, remove
-import datetime
-import models
-# from models import base_model
+
+"""[Unittest for state]
+    """
+from datetime import date, datetime
+from unittest import TestCase
 from models import state
-# from models.base_model import BaseModel
-from models.state import State
-# from models import engine
-# from models.engine import file_storage
-from models.engine.file_storage import FileStorage
+import uuid
+import pycodestyle
+State = state.State
 
 
-class TestState(unittest.TestCase):
-    """define variables and methods"""
+class Test_style(TestCase):
+    """[Class created to test style and syntax requirements for the
+    state class]
+    """
 
-    def setUp(self):
+    def test_pycode(self):
+        """[Function that check Syntax from Peep8 branch called pycodestyle]
         """
-        Sets the public class attributes of the State class back to ""
-        Method called to prepare the test fixture. This is called immediately
-        before calling the test method; other than AssertionError or SkipTest
+        foo = pycodestyle.StyleGuide(quiet=True).check_files([
+            'models/state.py'])
+        self.assertEqual(foo.total_errors, 0,
+                         "Found code style error (and warnings).")
+
+
+class Test_state(TestCase):
+    """[Class for testing all the function of state class]
+    """
+    @classmethod
+    def setUpClass(cls):
+        """Setting up a test object"""
+        cls.state1 = State()
+
+    def test_empty_state(self):
+        """[Testing if instance is correcty related]
         """
-        State.name = ""
-        FileStorage._FileStorage__objects = {}
-        FileStorage._FileStorage__file_path = "file.json"
+        self.assertIsNotNone(self.state1)
+        self.assertIsInstance(self.state1, State)
 
-    def tearDown(self):
+    def test_id_value(self):
+        """[Cheking if id is an uuid version 4]
         """
-        Sets the public class attributes of the State class back to ""
-        Method called immediately after the test method has been called and
-        the result recorded
+        state_test2 = State(id='1')
+        with self.assertRaises(ValueError) as _:
+            uuid.UUID(state_test2.id, version=4)
+        state_test3 = State(id=['1'])
+        with self.assertRaises(AttributeError) as _:
+            uuid.UUID(state_test3.id, version=4)
+
+    def test_dates(self):
+        """[Cheking dates are correctly created]
         """
-        del State.name
-        del FileStorage._FileStorage__file_path
-        del FileStorage._FileStorage__objects
-        if path.exists("file.json"):
-            remove("file.json")
+        self.assertIsInstance(self.state1.created_at, datetime)
+        self.assertIsInstance(self.state1.updated_at, datetime)
 
-    def test_pep8_conformance(self):
-        """Test that State conforms to PEP8"""
-        pep8style = pep8.StyleGuide(quiet=True)
-        result = pep8style.check_files(['models/state.py'])
-        self.assertEqual(result.total_errors, 0,
-                         "Found code style errors (and warnings).")
-
-    def test_class_method_presence(self):
-        """Test that the State methods are all present"""
-        l1 = dir(State)
-        self.assertIn('__init__', l1)
-        self.assertIn('save', l1)
-        self.assertIn('to_dict', l1)
-        self.assertIn('__str__', l1)
-
-    def test_class_attribute_presence(self):
-        """Test that the State attributes are all present"""
-        l1 = dir(State)
-        self.assertIn('name', l1)
-
-    def test_instance_method_presence(self):
-        """Test that the State instance has the same methods"""
-        l1 = dir(State())
-        self.assertIn('__init__', l1)
-        self.assertIn('save', l1)
-        self.assertIn('to_dict', l1)
-        self.assertIn('__str__', l1)
-
-    def test_instance_attribute_presence(self):
-        """Test that the State instance attributes are all present"""
-        l1 = dir(State())
-        self.assertIn('id', l1)
-        self.assertIn('updated_at', l1)
-        self.assertIn('created_at', l1)
-        self.assertIn('__class__', l1)
-        self.assertIn('name', l1)
-
-    def test_docstring_presence(self):
-        """Test that Module, Class, and methods all have a docstring"""
-        self.assertIsNot(state.__doc__, None)
-        self.assertIsNot(State.__doc__, None)
-        self.assertIsNot(State.__init__.__doc__, None)
-        self.assertIsNot(State.save.__doc__, None)
-        self.assertIsNot(State.to_dict.__doc__, None)
-        self.assertIsNot(State.__str__.__doc__, None)
-
-    def test_instantiation(self):
-        """Test proper instantiation of object 'User()'"""
-
-        st = State()
-        self.assertIsInstance(st, State)
-        self.assertIsInstance(st.id, str)
-        self.assertIsInstance(st.created_at, datetime.datetime)
-        self.assertIsInstance(st.updated_at, datetime.datetime)
-        self.assertIsInstance(st.__class__, type)
-
-        st.size = "tall"
-        l1 = dir(st)
-        self.assertIn('size', l1)
-        self.assertEqual(st.__dict__['size'], 'tall')
-
-        st.size = 'tall'
-        l2 = dir(st)
-        self.assertIn('size', l2)
-        self.assertEqual(st.__dict__['size'], 'tall')
-
-        st.age = 28
-        l3 = dir(st)
-        self.assertIn('age', l3)
-        self.assertEqual(st.__dict__['age'], 28)
-
-        st.age = 28.5
-        l4 = dir(st)
-        self.assertIn('age', l4)
-        self.assertEqual(st.__dict__['age'], 28.5)
-
-        st.age = None
-        l5 = dir(st)
-        self.assertIn('age', l5)
-        self.assertEqual(st.__dict__['age'], None)
-
-        st_kw1 = State(**{})
-        self.assertIsInstance(st_kw1, State)
-        self.assertIsInstance(st_kw1.id, str)
-        self.assertIsInstance(st_kw1.created_at, datetime.datetime)
-        self.assertIsInstance(st_kw1.updated_at, datetime.datetime)
-        self.assertIsInstance(st_kw1.__class__, type)
-
-        st_kw2 = State(**{"first_name": "John", "age": 25})
-        l6 = dir(st_kw2)
-        self.assertIn('first_name', l6)
-        self.assertIn('age', l6)
-        self.assertEqual(st_kw2.__dict__['first_name'], 'John')
-        self.assertEqual(st_kw2.__dict__['age'], 25)
+    def test__str__(self):
+        """[Cheking correct output when printing]"""
+        id1 = self.state1.id
+        self.assertTrue(f'[State] ({id1})' in str(self.state1))
 
     def test_save(self):
-        """Test save method"""
-
-        # storage = FileStorage()
-
-        st = State()
-        temp = st.__dict__['updated_at']
-        self.assertFalse(path.isfile('file.json'))
-        st.save()
-        self.assertTrue(path.isfile('file.json'))
-        self.assertNotEqual(st.__dict__['updated_at'], temp)
-        temp = st.__dict__['updated_at']
-        # storage.reload()
-        models.storage.reload()
-        self.assertEqual(st.__dict__['updated_at'], temp)
+        """Checks if updated_at is changed with save method"""
+        self.state1.save()
+        self.assertNotEqual(self.state1.updated_at,
+                            self.state1.created_at)
 
     def test_to_dict(self):
-        """Test to_dict method"""
+        """Checks to_dict method"""
+        state_test4 = State()
+        dict_state4 = state_test4.to_dict()
+        self.assertIsInstance(dict_state4, dict)
+        self.assertIsInstance(dict_state4['created_at'], str)
+        self.assertIsInstance(dict_state4['updated_at'], str)
 
-        st = State()
-        st.age = 28
-        st.size = "tall"
-        for k, v in st.__dict__.items():
-            if k != 'updated_at' and k != 'created_at':
-                self.assertIn(k, st.to_dict())
-                self.assertEqual(v, st.to_dict()[k])
-        self.assertEqual(st.to_dict()['__class__'], st.__class__.__name__)
-        self.assertEqual(st.to_dict()['updated_at'], st.updated_at.isoformat())
-        self.assertEqual(st.to_dict()['created_at'], st.created_at.isoformat())
-        self.assertEqual(st.to_dict()['age'], 28)
-        self.assertEqual(st.to_dict()['size'], 'tall')
-        self.assertIsInstance(st.to_dict(), dict)
+    def test_attributes(self):
+        """Checks correct attributes assignment"""
+        state5 = State(name='California')
+        self.assertEqual(state5.name, 'California')
 
-    def test_str(self):
-        """Test __str__ method"""
+    def test_creating_with_kwargs(self):
+        """[Checking creation with kwargs]"""
+        obj = State()
+        dictionary = obj.to_dict()
+        new_date = datetime.today()
+        new_date_iso = new_date.isoformat()
+        dictionary["created_at"] = new_date_iso
+        dictionary["updated_at"] = new_date_iso
+        id = dictionary["id"]
+        obj = State(**dictionary)
+        self.assertEqual(obj.id, id)
+        self.assertEqual(obj.created_at, new_date)
+        self.assertEqual(obj.updated_at, new_date)
 
-        st = State()
-        string = '['+st.__class__.__name__+']'+' ('+st.id+') '+str(st.__dict__)
-        self.assertEqual(string, st.__str__())
+    def test_save_with_file(self):
+        """ Checks if the generated key is saved in the json file"""
+        obj = State()
+        obj.save()
+        key_id = f"State.{obj.id}"
+        with open("file.json", mode="r", encoding="utf-8") as f:
+            self.assertIn(key_id, f.read())
